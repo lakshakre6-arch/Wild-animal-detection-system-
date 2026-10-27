@@ -2,90 +2,351 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wild Animal Detection System – Simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wild Animal Detection System: live simulation</title>
 <style>
-:root{--bg:#f6f7f4;--card:#fff;--tx:#1b1f1a;--mut:#667;--bd:#dde1d8;--ok:#2e9e4f;--bad:#d93a2f}
-@media(prefers-color-scheme:dark){:root{--bg:#121512;--card:#1b1f1a;--tx:#e8ece6;--mut:#9aa39a;--bd:#2c332b}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,sans-serif;padding:16px}
-main{max-width:640px;margin:auto}
-h1{font-size:1.3rem;margin:0 0 4px}
-p.s{color:var(--mut);margin:0 0 16px;font-size:.9rem}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
-label{display:flex;justify-content:space-between;font-weight:600}
-input[type=range]{width:100%;margin:8px 0 12px}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.led{width:22px;height:22px;border-radius:50%;background:var(--bd)}
-.led.on.g{background:var(--ok)}.led.on.r{background:var(--bad)}
-button,select{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
-button.on{background:var(--bad);color:#fff;border-color:var(--bad)}
-#res{font-size:1.4rem;font-weight:700}
-pre{margin:0;overflow-x:auto;font-size:.78rem;white-space:pre}
+:root{--bg:#EEF1EF;--card:#FFFFFF;--ink:#16262B;--muted:#58696E;--line:#D5DEDB;--teal:#117E78;--red:#C2392B;--redbg:#FBE7E4;--green:#2B7A50;--greenbg:#E3F3EA;--amber:#8A5A0B;--amberbg:#FBF0D9;--scene:#E9EEEC;--ground:#CBD3CF;--chip:#F3F6F5;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1517;--card:#162024;--ink:#E5EEEC;--muted:#94A6A9;--line:#2A393D;--teal:#4DC7BF;--red:#FF8A7A;--redbg:#3A1E1B;--green:#7FD6A4;--greenbg:#16301F;--amber:#F2C46D;--amberbg:#352A12;--scene:#1B2629;--ground:#2A3A3E;--chip:#1D292D;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0E1517;--card:#162024;--ink:#E5EEEC;--muted:#94A6A9;--line:#2A393D;--teal:#4DC7BF;--red:#FF8A7A;--redbg:#3A1E1B;--green:#7FD6A4;--greenbg:#16301F;--amber:#F2C46D;--amberbg:#352A12;--scene:#1B2629;--ground:#2A3A3E;--chip:#1D292D;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55}
+main{max-width:760px;margin:0 auto;padding:20px 14px 40px}
+h1{font-size:24px;line-height:1.2;margin:4px 0 6px;font-weight:650}
+h2{font-size:17px;margin:0 0 4px;font-weight:650}
+p{margin:0}
+.lead{color:var(--muted);font-size:15px;max-width:60ch;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 16px}
+.sub{color:var(--muted);font-size:14px;margin-bottom:10px}
+svg{display:block;width:100%;height:auto;border-radius:10px}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 4px}
+button{font:inherit;font-size:14px;color:var(--ink);background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:10px 8px;min-height:44px;cursor:pointer}
+button:hover{border-color:var(--teal)}
+button[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+:root[data-theme="dark"] button[aria-pressed="true"],:root:not([data-theme="light"]) button[aria-pressed="true"]{color:#06201E}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) button[aria-pressed="true"]{color:#fff}}
+button:focus-visible,input:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.row{display:flex;align-items:center;gap:12px;margin:12px 0 4px}
+.row label{font-size:14px;color:var(--muted);min-width:120px}
+.row input{flex:1;accent-color:var(--teal)}
+.row output{font-size:14px;font-weight:600;min-width:58px;text-align:right}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.stat{background:var(--chip);border-radius:10px;padding:10px 12px}
+.stat span{display:block;font-size:13px;color:var(--muted)}
+.stat b{font-size:17px;font-weight:650}
+.pill{display:inline-block;font-size:13px;font-weight:650;padding:3px 10px;border-radius:999px}
+.safe{background:var(--greenbg);color:var(--green)}
+.warn{background:var(--redbg);color:var(--red)}
+.mid{background:var(--amberbg);color:var(--amber)}
+.neu{background:var(--chip);color:var(--muted)}
+.blk{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.tile{border:1px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center}
+.tile span{display:block;font-size:12px;color:var(--muted)}
+.tile b{font-size:15px;font-weight:650}
+.log{list-style:none;margin:10px 0 0;padding:0}
+.log li{border-left:3px solid var(--red);background:var(--chip);border-radius:0 8px 8px 0;padding:8px 10px;margin-bottom:8px;font-size:14px}
+.log li small{display:block;color:var(--muted);font-size:12px}
+.log li.ov{border-left-color:var(--amber)}
+#ser{font-family:var(--mono);font-size:12px;line-height:1.6;background:#0D1416;color:#9FE3C4;border-radius:10px;padding:10px 12px;margin:0;white-space:pre-wrap;word-break:break-word;min-height:110px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+@keyframes ring{0%{transform:scale(.5);opacity:.7}100%{transform:scale(1.9);opacity:0}}
+@keyframes beep{0%,100%{opacity:.15}50%{opacity:1}}
+@keyframes glow{0%,100%{opacity:.25}50%{opacity:.5}}
+.rip{transform-box:fill-box;transform-origin:center;animation:ring 2.2s ease-out infinite}
+.rip.b{animation-delay:1.1s}
+.hit{transform-box:fill-box;transform-origin:center;animation:ring 1.2s ease-out infinite}
+.wave.on{animation:beep .6s infinite}
+.led{animation:glow 2.4s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.rip,.hit,.wave.on,.led{animation:none}}
 </style>
 </head>
 <body>
 <main>
 <h1>Wild Animal Detection System</h1>
-<p class="s">Browser simulator of the Block A controller. Same logic as the Arduino sketch in this repo.</p>
+<p class="lead">A live model of the prototype: an ESP32 DevKit reads two ultrasonic sensors at 4 ft and 6 ft, sounds the buzzer when only the lower beam is blocked, and reports to the Wild Sync console.</p>
 
-<div class="card">
-<label><span>Sensor 1 (4 ft, presence)</span><span id="v1"></span></label>
-<input id="s1" type="range" min="5" max="200" value="200">
-<label><span>Sensor 2 (6 ft, height)</span><span id="v2"></span></label>
-<input id="s2" type="range" min="5" max="200" value="200">
-<p class="s" style="margin:0">Under 100 cm counts as “object present”. Try: only sensor 1 close = animal, both close = human.</p>
+<section class="card" aria-labelledby="h-field">
+<h2 id="h-field">Field view</h2>
+<p class="sub">Choose what walks up to the pole and slide it closer or further away.</p>
+<svg viewBox="0 0 560 340" role="img" aria-label="Side view of the sensor pole with a 4 ft and a 6 ft ultrasonic sensor and an object in front of it">
+<defs><linearGradient id="steel" x1="0" x2="1"><stop offset="0" stop-color="#8E979D"/><stop offset=".45" stop-color="#E8ECEF"/><stop offset="1" stop-color="#7B848A"/></linearGradient></defs>
+<rect x="0" y="0" width="560" height="340" fill="var(--scene)"/>
+<rect x="0" y="300" width="560" height="40" fill="var(--ground)"/>
+<line x1="0" y1="300" x2="560" y2="300" stroke="var(--line)" stroke-width="2"/>
+<g stroke="var(--line)" stroke-width="1"><line x1="40" y1="60" x2="540" y2="60" stroke-dasharray="3 6"/><line x1="40" y1="140" x2="540" y2="140" stroke-dasharray="3 6"/></g>
+<text x="46" y="64" text-anchor="end" font-size="14" fill="var(--muted)">6 ft</text>
+<text x="46" y="144" text-anchor="end" font-size="14" fill="var(--muted)">4 ft</text>
+<line id="lim" x1="281" y1="30" x2="281" y2="300" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="6 5" opacity=".7"/>
+<text x="285" y="26" font-size="13" fill="var(--red)">100 cm limit</text>
+<polygon id="beam6" points="101,60 470,36 470,84" fill="#1BA39C" opacity=".14"/>
+<polygon id="beam4" points="101,140 470,116 470,164" fill="#1BA39C" opacity=".14"/>
+<rect x="56" y="20" width="12" height="280" fill="url(#steel)"/>
+<g><rect x="68" y="46" width="26" height="28" rx="2" fill="#1B5FA6" stroke="#12437A"/><rect x="94" y="51" width="7" height="18" rx="1" fill="#C9CED3" stroke="#8E959B"/></g>
+<g><rect x="68" y="126" width="26" height="28" rx="2" fill="#1B5FA6" stroke="#12437A"/><rect x="94" y="131" width="7" height="18" rx="1" fill="#C9CED3" stroke="#8E959B"/></g>
+<text id="rd6" x="112" y="30" font-size="14" fill="var(--ink)">6 ft sensor: no echo</text>
+<text id="rd4" x="112" y="110" font-size="14" fill="var(--ink)">4 ft sensor: no echo</text>
+<g id="obj" transform="translate(281,0)" style="display:none">
+<g id="animal" style="display:none">
+<rect x="0" y="180" width="82" height="120" fill="#8C8379" stroke="#6B645C"/>
+<rect x="-4" y="176" width="90" height="8" fill="#A29A8F" stroke="#6B645C"/>
+<path d="M60 166 C86 160 94 192 82 206" fill="none" stroke="#4A3B33" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="44" cy="156" rx="19" ry="22" fill="#4A3B33"/>
+<path d="M34 150 Q22 160 30 174" fill="none" stroke="#4A3B33" stroke-width="7" stroke-linecap="round"/>
+<circle cx="34" cy="126" r="14" fill="#4A3B33"/>
+<circle cx="26" cy="116" r="4.5" fill="#4A3B33"/><circle cx="43" cy="116" r="4.5" fill="#4A3B33"/>
+<ellipse cx="30" cy="128" rx="8" ry="7" fill="#D7B79B"/>
+<circle cx="27" cy="125" r="1.6" fill="#1A1210"/><circle cx="34" cy="125" r="1.6" fill="#1A1210"/>
+</g>
+<g id="person" style="display:none">
+<rect x="10" y="160" width="12" height="140" rx="5" fill="#2C3E50"/><rect x="22" y="160" width="12" height="140" rx="5" fill="#34495E"/>
+<rect x="6" y="78" width="30" height="86" rx="11" fill="#3E5871"/>
+<rect x="0" y="84" width="11" height="62" rx="5" fill="#324A60"/>
+<rect x="17" y="68" width="9" height="14" fill="#D9A77C"/>
+<circle cx="22" cy="60" r="14" fill="#D9A77C"/>
+<path d="M8 58 Q10 44 24 46 Q36 48 36 58 Q28 50 8 58Z" fill="#2A211C"/>
+</g>
+<g id="hitrings" style="display:none"><circle class="hit" cx="0" cy="140" r="14" fill="none" stroke="#1BA39C" stroke-width="2"/><circle id="hit6" class="hit" cx="0" cy="60" r="14" fill="none" stroke="#1BA39C" stroke-width="2"/></g>
+</g>
+<text x="12" y="326" font-size="13" fill="var(--muted)">Pole</text>
+</svg>
+<div class="seg" role="group" aria-label="Object in front of the pole">
+<button id="bNone" aria-pressed="true">Nothing</button>
+<button id="bAnimal" aria-pressed="false">Animal on a ledge</button>
+<button id="bPerson" aria-pressed="false">Tall person</button>
 </div>
+<div class="row"><label for="dist">Distance from pole</label><input type="range" id="dist" min="20" max="200" step="1" value="80"><output id="distOut">80 cm</output></div>
+<div class="row"><label for="ovBtn">Dashboard control</label><button id="ovBtn" aria-pressed="false" style="flex:1">Manual override: off</button></div>
+<div class="grid">
+<div class="stat"><span>6 ft sensor</span><b id="s6">--</b></div>
+<div class="stat"><span>4 ft sensor</span><b id="s4">--</b></div>
+<div class="stat"><span>Classification</span><b id="cls"><span class="pill safe">SAFE</span></b></div>
+<div class="stat"><span>Deterrent</span><b id="dtr">Standby</b></div>
+</div>
+<p class="note">The animal is a monkey sitting on a 3 ft ledge, so only the 4 ft beam reaches it. The person is taller than 6 ft, so both beams return an echo.</p>
+</section>
 
-<div class="card">
-<div id="res">SAFE</div>
-<div class="row" style="margin:10px 0">
-<span class="led g on" id="lg"></span><span>Safe</span>
-<span class="led r" id="lr"></span><span>Active</span>
-<span id="dt">Deterrent: STANDBY</span>
-</div>
-<div class="row">
-<button id="ov">Manual override</button>
-<label style="font-weight:400;gap:6px"><input type="checkbox" id="snd"> Buzzer sound</label>
-<select id="dur"><option value="15000">15 s deterrent</option><option value="5000">5 s (demo)</option></select>
-</div>
-</div>
+<section class="card" aria-labelledby="h-circuit">
+<h2 id="h-circuit">Circuit on the control board</h2>
+<p class="sub">The wiring as built: ESP32 DevKit, two HC-SR04 modules with a shared echo line, a 1k and 2k divider, and the buzzer.</p>
+<svg viewBox="0 0 560 640" role="img" aria-label="Realistic wiring of the ESP32 DevKit, two HC-SR04 ultrasonic sensors, a resistor divider and a buzzer on a plywood board">
+<defs>
+<linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D8AE76"/><stop offset=".5" stop-color="#C99C62"/><stop offset="1" stop-color="#BC8E55"/></linearGradient>
+<pattern id="holes" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="1.7" fill="#6E3510" opacity=".75"/></pattern>
+<pattern id="mesh" width="4" height="4" patternUnits="userSpaceOnUse"><path d="M0 0L4 4M4 0L0 4" stroke="#4B5258" stroke-width=".7"/></pattern>
+<radialGradient id="redglow"><stop offset="0" stop-color="#FF4A3D" stop-opacity=".9"/><stop offset="1" stop-color="#FF4A3D" stop-opacity="0"/></radialGradient>
+</defs>
+<rect x="0" y="0" width="560" height="640" rx="10" fill="url(#wood)"/>
+<g fill="none" stroke="#A87A42" stroke-width="1.2" opacity=".45"><path d="M0 60 C140 40 300 90 560 52"/><path d="M0 150 C160 130 320 170 560 140"/><path d="M0 250 C120 235 330 270 560 244"/><path d="M0 350 C180 330 340 372 560 346"/><path d="M0 450 C150 432 330 470 560 444"/><path d="M0 548 C170 530 350 566 560 540"/><path d="M0 620 C170 606 340 630 560 612"/></g>
 
-<div class="card"><pre id="log">Wild Animal Detection System - Block A (simulation)</pre></div>
+<g>
+<rect x="20" y="28" width="200" height="118" rx="4" fill="#4A2C20" stroke="#2E1A12"/>
+<rect x="30" y="40" width="180" height="84" rx="3" fill="#1B5FA6" stroke="#12437A"/>
+<circle cx="75" cy="76" r="33" fill="#C9CED3" stroke="#8E959B" stroke-width="1.5"/><circle cx="75" cy="76" r="26" fill="#2E3338"/><circle cx="75" cy="76" r="26" fill="url(#mesh)"/><path d="M58 62 A22 22 0 0 1 80 54" fill="none" stroke="#8D959C" stroke-width="2" stroke-linecap="round"/>
+<circle cx="165" cy="76" r="33" fill="#C9CED3" stroke="#8E959B" stroke-width="1.5"/><circle cx="165" cy="76" r="26" fill="#2E3338"/><circle cx="165" cy="76" r="26" fill="url(#mesh)"/><path d="M148 62 A22 22 0 0 1 170 54" fill="none" stroke="#8D959C" stroke-width="2" stroke-linecap="round"/>
+<ellipse cx="120" cy="60" rx="14" ry="6" fill="#C0C5CA" stroke="#868D93"/><rect x="104" y="92" width="14" height="8" fill="#16191C"/><rect x="124" y="92" width="14" height="8" fill="#16191C"/>
+<text x="120" y="82" text-anchor="middle" font-size="13" fill="#DCE8F5" font-family="system-ui,sans-serif">HC-SR04</text>
+<rect x="86" y="124" width="68" height="12" fill="#1A1A1A"/>
+<g fill="#D9B54A"><rect x="91" y="124" width="8" height="14"/><rect x="108" y="124" width="8" height="14"/><rect x="125" y="124" width="8" height="14"/><rect x="142" y="124" width="8" height="14"/></g>
+<g font-size="11" fill="#E8F0F8" text-anchor="middle" font-family="system-ui,sans-serif"><text x="95" y="118">V</text><text x="112" y="118">T</text><text x="129" y="118">E</text><text x="146" y="118">G</text></g>
+<g fill="none" stroke="#7FD3CD" stroke-width="2"><circle class="rip" cx="75" cy="76" r="22"/><circle class="rip b" cx="75" cy="76" r="22"/><circle class="rip" cx="165" cy="76" r="22"/><circle class="rip b" cx="165" cy="76" r="22"/></g>
+<text x="120" y="20" text-anchor="middle" font-size="15" fill="#2B1D12" font-family="system-ui,sans-serif">Sensor 1 (4 ft)</text>
+</g>
+<g>
+<rect x="340" y="28" width="200" height="118" rx="4" fill="#4A2C20" stroke="#2E1A12"/>
+<rect x="350" y="40" width="180" height="84" rx="3" fill="#1B5FA6" stroke="#12437A"/>
+<circle cx="395" cy="76" r="33" fill="#C9CED3" stroke="#8E959B" stroke-width="1.5"/><circle cx="395" cy="76" r="26" fill="#2E3338"/><circle cx="395" cy="76" r="26" fill="url(#mesh)"/><path d="M378 62 A22 22 0 0 1 400 54" fill="none" stroke="#8D959C" stroke-width="2" stroke-linecap="round"/>
+<circle cx="485" cy="76" r="33" fill="#C9CED3" stroke="#8E959B" stroke-width="1.5"/><circle cx="485" cy="76" r="26" fill="#2E3338"/><circle cx="485" cy="76" r="26" fill="url(#mesh)"/><path d="M468 62 A22 22 0 0 1 490 54" fill="none" stroke="#8D959C" stroke-width="2" stroke-linecap="round"/>
+<ellipse cx="440" cy="60" rx="14" ry="6" fill="#C0C5CA" stroke="#868D93"/><rect x="424" y="92" width="14" height="8" fill="#16191C"/><rect x="444" y="92" width="14" height="8" fill="#16191C"/>
+<text x="440" y="82" text-anchor="middle" font-size="13" fill="#DCE8F5" font-family="system-ui,sans-serif">HC-SR04</text>
+<rect x="406" y="124" width="68" height="12" fill="#1A1A1A"/>
+<g fill="#D9B54A"><rect x="411" y="124" width="8" height="14"/><rect x="428" y="124" width="8" height="14"/><rect x="445" y="124" width="8" height="14"/><rect x="462" y="124" width="8" height="14"/></g>
+<g font-size="11" fill="#E8F0F8" text-anchor="middle" font-family="system-ui,sans-serif"><text x="415" y="118">V</text><text x="432" y="118">T</text><text x="449" y="118">E</text><text x="466" y="118">G</text></g>
+<g fill="none" stroke="#7FD3CD" stroke-width="2"><circle class="rip" cx="395" cy="76" r="22"/><circle class="rip b" cx="395" cy="76" r="22"/><circle class="rip" cx="485" cy="76" r="22"/><circle class="rip b" cx="485" cy="76" r="22"/></g>
+<text x="440" y="20" text-anchor="middle" font-size="15" fill="#2B1D12" font-family="system-ui,sans-serif">Sensor 2 (6 ft)</text>
+</g>
+
+<g>
+<rect x="362" y="372" width="170" height="124" rx="3" fill="#B66A2D" stroke="#7A3E12"/>
+<rect x="362" y="372" width="170" height="124" rx="3" fill="url(#holes)"/>
+<rect x="462" y="398" width="28" height="12" rx="4" fill="#E8D5A8" stroke="#8D6E3F" stroke-width=".6"/>
+<g><rect x="468" y="398" width="3" height="12" fill="#6B3E1E"/><rect x="474" y="398" width="3" height="12" fill="#111"/><rect x="480" y="398" width="3" height="12" fill="#C0392B"/><rect x="485" y="398" width="2" height="12" fill="#C9A227"/></g>
+<rect x="439" y="428" width="12" height="28" rx="4" fill="#E8D5A8" stroke="#8D6E3F" stroke-width=".6"/>
+<g><rect x="439" y="434" width="12" height="3" fill="#C0392B"/><rect x="439" y="440" width="12" height="3" fill="#111"/><rect x="439" y="446" width="12" height="3" fill="#C0392B"/></g>
+<g fill="#C8CDD2" stroke="#7D858B"><circle cx="505" cy="404" r="5"/><circle cx="445" cy="404" r="5"/><circle cx="445" cy="480" r="5"/></g>
+<text x="448" y="386" font-size="12" fill="#FBEFD8" text-anchor="middle" font-family="system-ui,sans-serif">1k</text>
+<text x="428" y="446" font-size="12" fill="#FBEFD8" text-anchor="middle" font-family="system-ui,sans-serif">2k</text>
+</g>
+
+<rect x="246" y="186" width="28" height="30" rx="3" fill="#1E1E1E"/>
+<path d="M260 188 V0" fill="none" stroke="#C0392B" stroke-width="9" stroke-linecap="round"/>
+<path d="M257 188 V0" fill="none" stroke="#E8786A" stroke-width="2" stroke-dasharray="3 5"/>
+<rect x="246" y="214" width="28" height="32" rx="2" fill="#D9552B" stroke="#8E3517"/>
+
+<g>
+<rect x="190" y="250" width="140" height="340" rx="5" fill="#14171A" stroke="#000"/>
+<rect x="240" y="244" width="40" height="24" rx="2" fill="#B9BEC3" stroke="#7C838A"/><rect x="246" y="250" width="28" height="8" fill="#2A2D31"/>
+<rect x="194" y="274" width="18" height="304" fill="#1B1B1B" stroke="#000" stroke-width=".5"/><rect x="308" y="274" width="18" height="304" fill="#1B1B1B" stroke="#000" stroke-width=".5"/>
+<rect x="216" y="274" width="16" height="14" rx="2" fill="#2B2F33" stroke="#0A0A0A"/><circle cx="224" cy="281" r="4" fill="#8E959B"/>
+<rect x="288" y="274" width="16" height="14" rx="2" fill="#2B2F33" stroke="#0A0A0A"/><circle cx="296" cy="281" r="4" fill="#8E959B"/>
+<rect x="244" y="296" width="32" height="32" fill="#0E1114" stroke="#3A3F44"/><circle cx="251" cy="303" r="2" fill="#555B61"/>
+<rect x="222" y="340" width="24" height="18" fill="#1F2326" stroke="#3A3F44"/><rect x="226" y="336" width="16" height="5" fill="#8E959B"/>
+<rect x="252" y="345" width="8" height="12" fill="#C79A2A"/><rect x="264" y="345" width="8" height="12" fill="#C79A2A"/>
+<circle class="led" cx="296" cy="324" r="13" fill="url(#redglow)"/>
+<circle cx="296" cy="324" r="4" fill="#FF3B30"/>
+<circle id="ledB" cx="296" cy="344" r="4" fill="#1D3566"/>
+<rect x="214" y="380" width="92" height="130" rx="2" fill="#C9CED3" stroke="#8A9096"/>
+<rect x="222" y="392" width="76" height="40" fill="#B8BEC5" stroke="#9AA1A8" stroke-width=".6"/>
+<text x="260" y="412" text-anchor="middle" font-size="10" fill="#3A4047" font-family="system-ui,sans-serif">ESP-WROOM-32</text>
+<text x="260" y="426" text-anchor="middle" font-size="9" fill="#5A6168" font-family="system-ui,sans-serif">ESP32 DevKit</text>
+<rect x="222" y="444" width="28" height="28" fill="#E4E7EA" stroke="#9AA1A8" stroke-width=".6"/>
+<path d="M226 448h6v6h-6zM238 448h8v4h-8zM226 460h4v8h-4zM236 458h10v10h-10z" fill="#3A4047"/>
+<path d="M222 568 H298 V558 H226 V548 H298 V538 H226 V528 H298 V518" fill="none" stroke="#C9A227" stroke-width="2.4" stroke-linejoin="round"/>
+<g fill="#D9B54A" stroke="#8C6D1A" stroke-width=".8">
+<circle cx="203" cy="286" r="4.2"/><circle cx="203" cy="306" r="4.2"/><circle cx="203" cy="326" r="4.2"/><circle cx="203" cy="346" r="4.2"/><circle cx="203" cy="366" r="4.2"/><circle cx="203" cy="386" r="4.2"/><circle cx="203" cy="406" r="4.2"/><circle cx="203" cy="426" r="4.2"/><circle cx="203" cy="446" r="4.2"/><circle cx="203" cy="466" r="4.2"/><circle cx="203" cy="486" r="4.2"/><circle cx="203" cy="506" r="4.2"/><circle cx="203" cy="526" r="4.2"/><circle cx="203" cy="546" r="4.2"/><circle cx="203" cy="566" r="4.2"/>
+<circle cx="317" cy="286" r="4.2"/><circle cx="317" cy="306" r="4.2"/><circle cx="317" cy="326" r="4.2"/><circle cx="317" cy="346" r="4.2"/><circle cx="317" cy="366" r="4.2"/><circle cx="317" cy="386" r="4.2"/><circle cx="317" cy="406" r="4.2"/><circle cx="317" cy="426" r="4.2"/><circle cx="317" cy="446" r="4.2"/><circle cx="317" cy="466" r="4.2"/><circle cx="317" cy="486" r="4.2"/><circle cx="317" cy="506" r="4.2"/><circle cx="317" cy="526" r="4.2"/><circle cx="317" cy="546" r="4.2"/><circle cx="317" cy="566" r="4.2"/>
+</g>
+<g fill="none" stroke="#7FD3CD" stroke-width="1.6"><circle cx="203" cy="426" r="8"/><circle cx="203" cy="546" r="8"/><circle cx="203" cy="566" r="8"/><circle cx="317" cy="386" r="8"/><circle cx="317" cy="406" r="8"/><circle cx="317" cy="426" r="8"/><circle cx="317" cy="546" r="8"/></g>
+<g font-size="8.5" fill="#E4E9EC" font-family="system-ui,sans-serif" opacity=".9">
+<g text-anchor="start"><text x="216" y="289">EN</text><text x="216" y="309">VP</text><text x="216" y="329">VN</text><text x="216" y="349">D34</text><text x="216" y="369">D35</text><text x="216" y="389">D32</text><text x="216" y="409">D33</text><text x="216" y="429" font-weight="700">D25</text><text x="216" y="449">D26</text><text x="216" y="469">D27</text><text x="216" y="489">D14</text><text x="216" y="509">D12</text><text x="216" y="529">D13</text><text x="216" y="549" font-weight="700">GND</text><text x="216" y="569" font-weight="700">VIN</text></g>
+<g text-anchor="end"><text x="304" y="289">D23</text><text x="304" y="309">D22</text><text x="304" y="329">TX0</text><text x="304" y="349">RX0</text><text x="304" y="369">D21</text><text x="304" y="389" font-weight="700">D19</text><text x="304" y="409" font-weight="700">D18</text><text x="304" y="429" font-weight="700">D5</text><text x="304" y="449">TX2</text><text x="304" y="469">RX2</text><text x="304" y="489">D4</text><text x="304" y="509">D2</text><text x="304" y="529">D15</text><text x="304" y="549" font-weight="700">GND</text><text x="304" y="569">3V3</text></g>
+</g>
+</g>
+
+<g>
+<circle cx="125" cy="330" r="36" fill="#1B1B1B" stroke="#000" stroke-width="1.5"/>
+<circle cx="125" cy="330" r="28" fill="none" stroke="#3A3A3A" stroke-width="2"/>
+<circle cx="125" cy="330" r="6" fill="#C9A06A"/>
+<path d="M84 306 A12 12 0 0 1 96 298 L104 306 L92 316Z" fill="#1B1B1B" stroke="#000"/>
+<text x="125" y="356" text-anchor="middle" font-size="9" fill="#C8C8C8" font-family="system-ui,sans-serif">BUZZER 5V</text>
+<g id="waves" class="wave" fill="none" stroke="#E5392B" stroke-width="3" stroke-linecap="round" opacity="0"><path d="M104 288 Q125 270 146 288"/><path d="M94 276 Q125 248 156 276"/></g>
+<text x="125" y="388" text-anchor="middle" font-size="14" fill="#2B1D12" font-family="system-ui,sans-serif">Buzzer</text>
+</g>
+
+<g fill="none" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+<path d="M95 136 V160 H40 V600 H183 V566 H203" stroke="#D63B2F"/>
+<path d="M415 136 V148 H535 V600 H183" stroke="#D63B2F"/>
+<path d="M146 136 V176 H52 V546 H203" stroke="#1F1F1F"/>
+<path d="M466 136 V152 H520 V546 H317" stroke="#1F1F1F"/>
+<path d="M445 480 V546" stroke="#1F1F1F"/>
+<path d="M112 136 V200 H354 V426 H323" stroke="#2E9B47"/>
+<path d="M432 136 V215 H344 V386 H323" stroke="#2E9B47"/>
+<path d="M129 136 V190 H505 V404" stroke="#E9B410"/>
+<path d="M449 136 V190" stroke="#E9B410"/>
+<path d="M445 404 L323 406" stroke="#E9B410"/>
+<path d="M155 340 C175 340 185 426 203 426" stroke="#D63B2F"/>
+<path d="M112 362 C112 450 150 546 203 546" stroke="#1F1F1F"/>
+</g>
+<g fill="#222"><circle cx="449" cy="190" r="3.5"/><circle cx="183" cy="600" r="3.5"/></g>
+<text x="452" y="612" font-size="12" fill="#2B1D12" font-family="system-ui,sans-serif">5V from USB</text>
+</svg>
+<table style="margin-top:12px" aria-label="Pin connections">
+<thead><tr><th>Part</th><th>Pin</th><th>ESP32 pin</th></tr></thead>
+<tbody>
+<tr><td>Sensor 1 (4 ft)</td><td>Trig</td><td>D5</td></tr>
+<tr><td>Sensor 2 (6 ft)</td><td>Trig</td><td>D19</td></tr>
+<tr><td>Both sensors</td><td>Echo (joined, 1k and 2k divider)</td><td>D18</td></tr>
+<tr><td>Buzzer</td><td>Positive</td><td>D25</td></tr>
+<tr><td>Sensors and buzzer</td><td>VCC and GND</td><td>VIN and GND</td></tr>
+</tbody></table>
+<p class="note">Echo outputs are tied together, so the firmware triggers one sensor at a time. If readings look odd on the real board, give each sensor its own echo pin.</p>
+</section>
+
+<section class="card" aria-labelledby="h-con">
+<div class="blk"><div><h2 id="h-con">Wild Sync console</h2><p class="sub">What the staff dashboard shows for Block A.</p></div><span id="tag" class="pill safe">SAFE</span></div>
+<p class="sub" style="margin:0">Battery 98% and signal -45 dBm</p>
+<div class="tiles"><div class="tile"><span>6 ft sensor</span><b id="c6">--cm</b></div><div class="tile"><span>4 ft sensor</span><b id="c4">--cm</b></div><div class="tile"><span>Deterrent</span><b id="cd">STANDBY</b></div></div>
+<h2 style="font-size:15px">System event log</h2>
+<ul class="log" id="log"><li style="border-left-color:var(--line)">No events yet. Pick an animal and move it inside 100 cm.</li></ul>
+</section>
+
+<section class="card" aria-labelledby="h-ser">
+<h2 id="h-ser">Serial monitor</h2>
+<p class="sub">One status packet each second, as the ESP32 would send it.</p>
+<pre id="ser" aria-live="off">Booting Block A...</pre>
+</section>
 </main>
 <script>
-const DETECT_CM=100;
-let override=false,until=0,lastStatus=0,ac,osc;
-const $=id=>document.getElementById(id);
-function buzz(on){
-  if(!$("snd").checked){if(osc){osc.stop();osc=null}return}
-  if(on&&!osc){ac=ac||new AudioContext();osc=ac.createOscillator();const g=ac.createGain();g.gain.value=.05;osc.frequency.value=2000;osc.connect(g).connect(ac.destination);osc.start()}
-  if(!on&&osc){osc.stop();osc=null}
+(function(){
+var LIM=100,HOLD=15000,X0=101,SC=1.8;
+var obj='none',over=false,until=0,t0=Date.now(),lines=[],events=[],wasAnimal=false;
+var $=function(i){return document.getElementById(i)};
+var dist=$('dist');
+function fmtTime(){var d=new Date(),h=d.getHours(),m=d.getMinutes(),ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+(m<10?'0':'')+m+' '+ap}
+function evalState(){
+ var d=+dist.value,d4=obj==='none'?null:d,d6=obj==='person'?d:null;
+ var n4=d4!==null&&d4<LIM,n6=d6!==null&&d6<LIM,r='SAFE',cls='safe';
+ if(n4&&!n6){r='LIKELY ANIMAL';cls='warn';until=Date.now()+HOLD}
+ else if(n4&&n6){r='LIKELY HUMAN';cls='mid'}
+ else if(!n4&&n6){r='UNUSUAL READING';cls='neu'}
+ var left=Math.max(0,Math.ceil((until-Date.now())/1000)),act=over||left>0;
+ return {d:d,d4:d4,d6:d6,r:r,cls:cls,act:act,left:left};
 }
-$("ov").onclick=()=>{override=!override;$("ov").classList.toggle("on",override)};
+function cm(v){return v===null?'--':v}
+function render(){
+ var e=evalState();
+ $('distOut').textContent=e.d+' cm';
+ $('s6').textContent=e.d6===null?'--':e.d6+' cm';
+ $('s4').textContent=e.d4===null?'--':e.d4+' cm';
+ $('cls').innerHTML='<span class="pill '+e.cls+'">'+e.r+'</span>';
+ $('dtr').textContent=e.act?(over?'ACTIVE (override)':'ACTIVE ('+e.left+' s)'):'Standby';
+ $('c6').textContent=cm(e.d6)+'cm';$('c4').textContent=cm(e.d4)+'cm';
+ $('cd').textContent=e.act?'ACTIVE':'STANDBY';
+ var tag=$('tag');
+ if(over){tag.className='pill warn';tag.textContent='OVERRIDE - FIRING'}
+ else{tag.className='pill '+(e.r==='LIKELY ANIMAL'?'warn':e.r==='LIKELY HUMAN'?'mid':'safe');tag.textContent=e.r==='LIKELY ANIMAL'?'THREAT':e.r==='LIKELY HUMAN'?'PERSON':'SAFE'}
+ var x=X0+e.d*SC,o=$('obj');
+ o.style.display=obj==='none'?'none':'';
+ o.setAttribute('transform','translate('+x+',0)');
+ $('animal').style.display=obj==='animal'?'':'none';
+ $('person').style.display=obj==='person'?'':'none';
+ $('hitrings').style.display=obj==='none'?'none':'';
+ $('hit6').style.display=obj==='person'?'':'none';
+ var inRange=function(v){return v!==null};
+ var end4=inRange(e.d4)?x:470,end6=inRange(e.d6)?x:470;
+ var sp=function(end){return Math.max(6,(end-X0)/(470-X0)*24)};
+ $('beam4').setAttribute('points',X0+',140 '+end4+','+(140-sp(end4))+' '+end4+','+(140+sp(end4)));
+ $('beam6').setAttribute('points',X0+',60 '+end6+','+(60-sp(end6))+' '+end6+','+(60+sp(end6)));
+ $('beam4').setAttribute('opacity',inRange(e.d4)?'.32':'.14');
+ $('beam6').setAttribute('opacity',inRange(e.d6)?'.32':'.14');
+ $('rd4').textContent='4 ft sensor: '+(e.d4===null?'no echo':e.d4+' cm');
+ $('rd6').textContent='6 ft sensor: '+(e.d6===null?'no echo':e.d6+' cm');
+ var w=$('waves');w.setAttribute('class',e.act?'wave on':'wave');w.setAttribute('opacity',e.act?'1':'0');
+ $('ledB').setAttribute('fill',e.act?'#4C8BFF':'#1D3566');
+ var an=e.r==='LIKELY ANIMAL';
+ if(an&&!wasAnimal)addEvent('Threat Classified: Block A','4 ft perimeter breached. Deterrent authorized and fired for 15s.',false);
+ wasAnimal=an;
+ return e;
+}
+function addEvent(t,m,ov){
+ events.unshift({t:t,m:m,ov:ov,when:fmtTime()});if(events.length>5)events.pop();
+ $('log').innerHTML=events.map(function(v){return '<li'+(v.ov?' class="ov"':'')+'><small>Today, '+v.when+'</small><strong>'+v.t+'</strong><br>'+v.m+'</li>'}).join('');
+}
 function tick(){
-  const d4=+$("s1").value,d6=+$("s2").value,now=Date.now();
-  $("v1").textContent=d4>=200?"no echo":d4+" cm";
-  $("v2").textContent=d6>=200?"no echo":d6+" cm";
-  const n4=d4<DETECT_CM,n6=d6<DETECT_CM;
-  let r="SAFE";
-  if(n4&&!n6){r="LIKELY ANIMAL";until=now+ +$("dur").value}
-  else if(n4&&n6)r="LIKELY HUMAN";
-  else if(!n4&&n6)r="UNUSUAL READING";
-  const active=override||now<until;
-  buzz(active);
-  $("lr").classList.toggle("on",active);
-  $("lg").classList.toggle("on",!active);
-  $("res").textContent=r;
-  $("dt").textContent="Deterrent: "+(active?"ACTIVE":"STANDBY");
-  if(now-lastStatus>=1000){
-    lastStatus=now;
-    const f=d=>d>=200?"--":d;
-    const line="zone=Block A, t="+Math.floor(performance.now()/1000)+"s, d6ft="+f(d6)+"cm, d4ft="+f(d4)+"cm, result="+r+", deterrent="+(active?"ACTIVE":"STANDBY")+(override?" (OVERRIDE)":"");
-    const L=$("log").textContent.split("\n");L.push(line);$("log").textContent=L.slice(-8).join("\n");
-  }
+ var e=render(),s=Math.floor((Date.now()-t0)/1000);
+ lines.push('zone=Block A t='+s+'s d6='+cm(e.d6)+'cm d4='+cm(e.d4)+'cm result='+e.r.replace(' ','_')+' deterrent='+(e.act?'ACTIVE':'STANDBY')+' batt=98% rssi=-45');
+ if(lines.length>6)lines.shift();
+ $('ser').textContent=lines.join('\n');
 }
-setInterval(tick,100);
+function setObj(k){
+ obj=k;
+ [['bNone','none'],['bAnimal','animal'],['bPerson','person']].forEach(function(p){$(p[0]).setAttribute('aria-pressed',String(p[1]===k))});
+ render();
+}
+$('bNone').onclick=function(){setObj('none')};
+$('bAnimal').onclick=function(){setObj('animal')};
+$('bPerson').onclick=function(){setObj('person')};
+dist.addEventListener('input',render);
+$('ovBtn').onclick=function(){
+ over=!over;this.setAttribute('aria-pressed',String(over));this.textContent='Manual override: '+(over?'on':'off');
+ addEvent(over?'Manual override: Block A':'Override released: Block A',over?'Authorized staff fired the deterrent from the dashboard.':'Deterrent returned to standby.',true);
+ render();
+};
+render();tick();setInterval(tick,1000);
+})();
 </script>
 </body>
 </html>
