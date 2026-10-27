@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wild Animal Detection System – Simulator</title>
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--tx:#1b1f1a;--mut:#667;--bd:#dde1d8;--ok:#2e9e4f;--bad:#d93a2f}
+@media(prefers-color-scheme:dark){:root{--bg:#121512;--card:#1b1f1a;--tx:#e8ece6;--mut:#9aa39a;--bd:#2c332b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,sans-serif;padding:16px}
+main{max-width:640px;margin:auto}
+h1{font-size:1.3rem;margin:0 0 4px}
+p.s{color:var(--mut);margin:0 0 16px;font-size:.9rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+label{display:flex;justify-content:space-between;font-weight:600}
+input[type=range]{width:100%;margin:8px 0 12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.led{width:22px;height:22px;border-radius:50%;background:var(--bd)}
+.led.on.g{background:var(--ok)}.led.on.r{background:var(--bad)}
+button,select{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+button.on{background:var(--bad);color:#fff;border-color:var(--bad)}
+#res{font-size:1.4rem;font-weight:700}
+pre{margin:0;overflow-x:auto;font-size:.78rem;white-space:pre}
+</style>
+</head>
+<body>
+<main>
+<h1>Wild Animal Detection System</h1>
+<p class="s">Browser simulator of the Block A controller. Same logic as the Arduino sketch in this repo.</p>
+
+<div class="card">
+<label><span>Sensor 1 (4 ft, presence)</span><span id="v1"></span></label>
+<input id="s1" type="range" min="5" max="200" value="200">
+<label><span>Sensor 2 (6 ft, height)</span><span id="v2"></span></label>
+<input id="s2" type="range" min="5" max="200" value="200">
+<p class="s" style="margin:0">Under 100 cm counts as “object present”. Try: only sensor 1 close = animal, both close = human.</p>
+</div>
+
+<div class="card">
+<div id="res">SAFE</div>
+<div class="row" style="margin:10px 0">
+<span class="led g on" id="lg"></span><span>Safe</span>
+<span class="led r" id="lr"></span><span>Active</span>
+<span id="dt">Deterrent: STANDBY</span>
+</div>
+<div class="row">
+<button id="ov">Manual override</button>
+<label style="font-weight:400;gap:6px"><input type="checkbox" id="snd"> Buzzer sound</label>
+<select id="dur"><option value="15000">15 s deterrent</option><option value="5000">5 s (demo)</option></select>
+</div>
+</div>
+
+<div class="card"><pre id="log">Wild Animal Detection System - Block A (simulation)</pre></div>
+</main>
+<script>
+const DETECT_CM=100;
+let override=false,until=0,lastStatus=0,ac,osc;
+const $=id=>document.getElementById(id);
+function buzz(on){
+  if(!$("snd").checked){if(osc){osc.stop();osc=null}return}
+  if(on&&!osc){ac=ac||new AudioContext();osc=ac.createOscillator();const g=ac.createGain();g.gain.value=.05;osc.frequency.value=2000;osc.connect(g).connect(ac.destination);osc.start()}
+  if(!on&&osc){osc.stop();osc=null}
+}
+$("ov").onclick=()=>{override=!override;$("ov").classList.toggle("on",override)};
+function tick(){
+  const d4=+$("s1").value,d6=+$("s2").value,now=Date.now();
+  $("v1").textContent=d4>=200?"no echo":d4+" cm";
+  $("v2").textContent=d6>=200?"no echo":d6+" cm";
+  const n4=d4<DETECT_CM,n6=d6<DETECT_CM;
+  let r="SAFE";
+  if(n4&&!n6){r="LIKELY ANIMAL";until=now+ +$("dur").value}
+  else if(n4&&n6)r="LIKELY HUMAN";
+  else if(!n4&&n6)r="UNUSUAL READING";
+  const active=override||now<until;
+  buzz(active);
+  $("lr").classList.toggle("on",active);
+  $("lg").classList.toggle("on",!active);
+  $("res").textContent=r;
+  $("dt").textContent="Deterrent: "+(active?"ACTIVE":"STANDBY");
+  if(now-lastStatus>=1000){
+    lastStatus=now;
+    const f=d=>d>=200?"--":d;
+    const line="zone=Block A, t="+Math.floor(performance.now()/1000)+"s, d6ft="+f(d6)+"cm, d4ft="+f(d4)+"cm, result="+r+", deterrent="+(active?"ACTIVE":"STANDBY")+(override?" (OVERRIDE)":"");
+    const L=$("log").textContent.split("\n");L.push(line);$("log").textContent=L.slice(-8).join("\n");
+  }
+}
+setInterval(tick,100);
+</script>
+</body>
+</html>
